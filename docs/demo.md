@@ -2,8 +2,9 @@
 
 실제 사용 흐름을 하루 단위로 따라간다. (저장소의 예시 데이터는 공간전사체/CellCharter 연구를 소재로 한다.)
 
-> 화면: `dashboard.html`을 브라우저로 열면 아래 상태를 실제로 볼 수 있다.
-> (스크린샷을 넣으려면 `docs/images/dashboard.png`에 저장 후 이 문서에 임베드)
+![Cowork 대시보드](images/dashboard.png)
+
+> 화면: `dashboard.html`을 브라우저로 열면 위 상태를 실제로 볼 수 있다. (라이트/다크 자동)
 
 ---
 
