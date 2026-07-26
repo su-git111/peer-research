@@ -1,0 +1,11 @@
+# 야간 작업 원본 로그 (리포트로 요약되므로 제외)
+night/logs/*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
