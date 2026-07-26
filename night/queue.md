@@ -8,6 +8,7 @@
 > 삭제·전송·게시·git push 등 되돌릴 수 없는 명령은 실행하지 않고 아침 리포트에 '보류'로 표시만 합니다.
 
 ## 실행 대기
-- [ ] (예시) python scripts/param_sweep.py --config configs/niche.yaml
+- [ ] (여기에 밤에 돌릴 명령을 추가하세요)
 
 ## 완료 (자동 기록)
+- [x] python examples/param_sweep_demo.py — 2026-07-26, 성공(exit 0), best k=3 silhouette 0.750, 로그 night/logs/2026-07-26_job1.log
