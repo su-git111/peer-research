@@ -61,3 +61,4 @@ research-cowork/
 - 파일을 새로 만들 땐 항상 `templates/` 의 템플릿을 기준으로 한다.
 - 사용자의 코드 스타일: 평평한 구조, dict + loop, AI스러운 섹션 배너 금지 (Python 스크립트 수정 시 적용).
 - 체크박스 상태를 바꾸면 `build_dashboard.py` 를 다시 돌린다.
+- 같은 워크플로를 Claude 없이 도는 결정론적 CLI(`cowork.py [daily|weekly|night|close|dashboard]`)로도 실행할 수 있다. 자동 스케줄은 `schedule_setup.ps1`(Windows 작업 스케줄러). 두 모드는 같은 마크다운 파일을 공유한다.

@@ -10,6 +10,7 @@ Cowork는 "챗봇"이 아니라 **스스로 스케줄에 따라 움직이는 자
 - 📄 **[서비스 기획서](docs/기획서.md)** — 문제 정의, 페르소나, 기능, 차별점, KPI, 로드맵
 - 🧱 **[아키텍처 & 에이전트 설계](docs/architecture.md)** — 시스템 구조, 오케스트레이션, 안전 설계
 - 🎬 **[데모 시나리오](docs/demo.md)** — 실제 사용 흐름과 화면
+- ⚙️ **[Claude 없이 실행](docs/standalone.md)** — 파이썬 CLI + Windows 스케줄러로 독립 실행
 
 ![Cowork 대시보드](docs/images/dashboard.png)
 
@@ -77,6 +78,15 @@ python build_dashboard.py   # -> dashboard.html
 
 자동 스케줄(주간·일간·야간)은 로컬 스케줄러로 등록되어, 앱이 켜져 있는 동안 발화합니다. 설정은 [architecture.md](docs/architecture.md#스케줄링)를 참고하세요.
 
+**Claude 없이도 실행됩니다.** 같은 워크플로를 결정론적 파이썬 CLI로 돌릴 수 있어, LLM 없이 자동화할 수 있습니다 (회고·이월·집계·계산 실행·논문 수집은 자동, 판단이 필요한 칸은 스캐폴드로 남김):
+
+```bash
+python cowork.py daily     # 오늘 체크리스트 (어제 미완 이월)
+python cowork.py night     # 큐 작업 실행 + Europe PMC 논문 조회 → 아침 리포트
+```
+
+Windows 작업 스케줄러 등록은 `schedule_setup.ps1` 한 번이면 끝 — 앱 없이 PC만 켜져 있으면(절전 시 깨워서) 자동 실행됩니다. 자세히는 **[Claude 없이 실행](docs/standalone.md)**.
+
 ## 프로젝트 구조
 
 ```
@@ -103,8 +113,9 @@ cowork/
 ## 기술 스택
 
 - **에이전트 런타임**: Claude Code (Claude Agent SDK) — 셸·파일·웹 도구 + 슬래시 커맨드 + 로컬 스케줄러
+- **독립 런타임**: `cowork.py` — LLM 없이 도는 파이썬 CLI + Windows 작업 스케줄러
 - **저장**: 마크다운 (플레인텍스트, Git·Obsidian·VSCode 호환 → 잠금 없음, 이식성)
-- **대시보드 빌드**: Python 표준 라이브러리만 (의존성 0)
+- **논문 조회**: Europe PMC REST API (키 불필요), **의존성은 파이썬 표준 라이브러리만** (계산 데모만 numpy)
 
 ## 로드맵
 

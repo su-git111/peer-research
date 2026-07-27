@@ -1,12 +1,14 @@
 # 논문 모니터링 워치리스트
 
-> 밤 근무 봇이 아래 키워드로 최근 논문·프리프린트·툴 업데이트를 검색해 아침 리포트에 요약합니다.
-> 관심 주제로 자유롭게 바꾸세요. 한 줄에 하나.
+> `cowork.py night`가 아래 각 줄을 **Europe PMC 검색 쿼리**로 그대로 사용해 최신 논문을 가져옵니다.
+> 정확도를 위해 구문(phrase)은 큰따옴표로, 여러 조건은 `AND`로 묶으세요.
+>   예) `"spatial transcriptomics" AND niche` , `"CellCharter"` , `"spatial domain" AND clustering`
+> 따옴표 없이 흔한 단어만 나열하면(niche 등) 무관한 논문이 섞입니다.
 
 ## 키워드
-- spatial transcriptomics niche analysis
-- CellCharter cell neighborhood
-- spatial domain clustering single-cell
+- "spatial transcriptomics" AND niche
+- "CellCharter"
+- "spatial domain" AND clustering
 
 ## 저자 / 랩 (선택)
 - 
