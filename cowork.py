@@ -325,13 +325,23 @@ def cmd_projopen():
     print("      (## P1. 이름 / - 큰 목표: ... / 작은 목표 체크박스가 진행률 막대가 됩니다)")
 
 
+def launch_dashboard():
+    serve = os.path.join(root, "serve.py")
+    print("    대시보드 서버를 새 창에서 시작합니다. 브라우저가 열립니다.")
+    print("    (체크박스를 클릭하면 바로 저장됩니다. 서버 창을 닫으면 종료)")
+    if os.name == "nt":
+        subprocess.Popen([sys.executable, serve], cwd=root, creationflags=subprocess.CREATE_NEW_CONSOLE)
+    else:
+        subprocess.Popen([sys.executable, serve], cwd=root)
+
+
 def cmd_menu():
     items = [("1", "오늘 할 일 열기 / 체크하기   (아침~낮)"),
              ("2", "오늘 일지 쓰기               (저녁)"),
              ("3", "이번 주 계획 열기 / 수정     (월요일)"),
              ("4", "프로젝트 목록 열기 / 수정"),
              ("5", "밤 근무 지금 돌리기          (계산 + 논문)"),
-             ("6", "대시보드 열기"),
+             ("6", "대시보드 열기 (체크 가능)"),
              ("0", "종료")]
     while True:
         print("\n" + "=" * 46)
@@ -359,8 +369,7 @@ def cmd_menu():
             cmd_night()
             open_path("dashboard.html")
         elif c == "6":
-            build_dashboard()
-            open_path("dashboard.html")
+            launch_dashboard()
         else:
             print("    1~5 또는 0을 입력하세요.")
             continue

@@ -52,14 +52,41 @@ def bar(done, total):
     return f'<div class="bar"><span style="width:{pct}%"></span></div><small>{done}/{total} · {pct}%</small>'
 
 
-def checklist(items):
+def section_ln(text, heading):
+    out, collecting = [], False
+    for i, line in enumerate(text.split("\n")):
+        if line.startswith("## "):
+            collecting = line[3:].strip().startswith(heading)
+            continue
+        if collecting:
+            out.append((i, line))
+    return out
+
+
+def checkboxes_ln(pairs):
+    items = []
+    for lineno, line in pairs:
+        m = re.match(r"\s*-\s*\[([ xX])\]\s*(.*)", line)
+        if not m:
+            continue
+        text = m.group(2).strip()
+        if not text:
+            continue
+        items.append((m.group(1).lower() == "x", text, lineno))
+    return items
+
+
+def checklist(file, items):
     if not items:
         return '<p class="empty">항목 없음</p>'
     rows = []
-    for checked, text in items:
+    for checked, text, lineno in items:
         box = "checked" if checked else ""
         cls = "done" if checked else ""
-        rows.append(f'<li class="{cls}"><input type="checkbox" disabled {box}><span>{html.escape(text)}</span></li>')
+        rows.append(
+            f'<li class="{cls}"><input type="checkbox" {box} data-file="{html.escape(file)}" '
+            f'data-line="{lineno}" onchange="toggle(this)"><span>{html.escape(text)}</span></li>'
+        )
     return '<ul class="check">' + "".join(rows) + "</ul>"
 
 
@@ -78,27 +105,26 @@ for block in re.split(r"\n(?=##\s+P)", read(os.path.join(root, "projects.md"))):
     done, total, _ = checkboxes(block.splitlines())
     projects.append({"name": m.group(1).strip(), "goal": goal, "done": done, "total": total})
 
-week = {"title": "-", "top": [], "path": None}
-wpath = latest("weekly", "*.md")
+week = {"title": "-", "top": [], "file": ""}
+wpath = latest("weekly", "2*.md")
 if wpath:
     wtext = read(wpath)
-    week["path"] = os.path.basename(wpath)
+    week["file"] = os.path.relpath(wpath, root).replace("\\", "/")
     week["title"] = wtext.splitlines()[0].lstrip("# ").strip()
-    _, _, week["top"] = checkboxes(section(wtext, "이번 주 목표"))
+    week["top"] = checkboxes_ln(section_ln(wtext, "이번 주 목표"))
 
-day = {"title": "-", "focus": [], "slots": {}, "path": None}
-dpath = latest("daily", "*.md")
+day = {"title": "-", "focus": [], "slots": {}, "file": ""}
+dpath = latest("daily", "2*.md")
 if dpath:
     dtext = read(dpath)
-    day["path"] = os.path.basename(dpath)
+    day["file"] = os.path.relpath(dpath, root).replace("\\", "/")
     day["title"] = dtext.splitlines()[0].lstrip("# ").strip()
     for line in section(dtext, "오늘의 초점"):
         m = re.match(r"\s*-\s*(.*)", line)
         if m and m.group(1).strip():
             day["focus"].append(m.group(1).strip())
     for slot in ["오전", "오후", "밤"]:
-        _, _, items = checkboxes(section(dtext, slot))
-        day["slots"][slot] = items
+        day["slots"][slot] = checkboxes_ln(section_ln(dtext, slot))
 
 night = {"title": None, "summary": []}
 npath = latest("night/reports", "2*.md")
@@ -139,29 +165,29 @@ slot_icon = {"오전": "🌅", "오후": "☀️", "밤": "🌙"}
 day_done = day_total = 0
 for slot in ["오전", "오후", "밤"]:
     items = day["slots"].get(slot, [])
-    d = sum(1 for c, _ in items if c)
+    d = sum(1 for c, _, _ in items if c)
     day_done += d
     day_total += len(items)
     slot_html.append(
         f'<div class="slot"><h4>{slot_icon[slot]} {slot} '
-        f'<small>{d}/{len(items)}</small></h4>{checklist(items)}</div>'
+        f'<small>{d}/{len(items)}</small></h4>{checklist(day["file"], items)}</div>'
     )
 
 week_phases = {"주초": [], "주중": [], "주말": []}
 week_other = []
-for checked, text in week["top"]:
+for checked, text, lineno in week["top"]:
     ph = next((k for k in week_phases if text.startswith(k)), None)
     if ph:
-        week_phases[ph].append((checked, text[len(ph):].lstrip(" ·—-").strip()))
+        week_phases[ph].append((checked, text[len(ph):].lstrip(" ·—-").strip(), lineno))
     else:
-        week_other.append((checked, text))
+        week_other.append((checked, text, lineno))
 
 phase_meta = [("주초", "🟦", "#3b6ef5", 2), ("주중", "🟨", "#f5a623", 3), ("주말", "🟩", "#2fb37a", 2)]
 if any(week_phases.values()):
     segs, cols = [], []
     for name, icon, color, days in phase_meta:
         items = week_phases[name]
-        d = sum(1 for c, _ in items if c)
+        d = sum(1 for c, _, _ in items if c)
         pct = round(100 * d / len(items)) if items else 0
         segs.append(
             f'<div class="wseg" style="flex:{days}">'
@@ -170,20 +196,21 @@ if any(week_phases.values()):
         )
         cols.append(
             f'<div class="slot" style="border-top:3px solid {color}">'
-            f'<h4>{icon} {name} <small>{d}/{len(items)}</small></h4>{checklist(items)}</div>'
+            f'<h4>{icon} {name} <small>{d}/{len(items)}</small></h4>{checklist(week["file"], items)}</div>'
         )
     if week_other:
-        od = sum(1 for c, _ in week_other if c)
-        cols.append(f'<div class="slot"><h4>🔹 기타 <small>{od}/{len(week_other)}</small></h4>{checklist(week_other)}</div>')
+        od = sum(1 for c, _, _ in week_other if c)
+        cols.append(f'<div class="slot"><h4>🔹 기타 <small>{od}/{len(week_other)}</small></h4>{checklist(week["file"], week_other)}</div>')
     week_html = f'<div class="wtl">{"".join(segs)}</div><div class="grid">{"".join(cols)}</div>'
 else:
-    wd = sum(1 for c, _ in week["top"] if c)
-    week_html = f'<div class="slot">{bar(wd, len(week["top"]))}{checklist(week["top"])}</div>'
+    wd = sum(1 for c, _, _ in week["top"] if c)
+    week_html = f'<div class="slot">{bar(wd, len(week["top"]))}{checklist(week["file"], week["top"])}</div>'
 
 page = f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>연구 일지 봇 대시보드</title>
+<link rel="icon" href="icon.ico">
 <style>
 :root {{
   --bg:#f6f7f9; --card:#fff; --fg:#1c2430; --muted:#7a8699;
@@ -228,6 +255,7 @@ ul.check input {{ margin-top:3px; accent-color:var(--done); }}
 .wtxt {{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   gap:5px; font-size:13px; font-weight:600; z-index:1; white-space:nowrap; }}
 .wtxt b {{ color:var(--muted); font-weight:600; }}
+.hint {{ color:var(--muted); font-size:12px; margin:18px 0 0; text-align:center; }}
 </style></head><body>
 <div class="top"><h1>📓 연구 일지 봇 대시보드</h1><span class="stamp">갱신 {stamp}</span></div>
 {night_html}
@@ -241,6 +269,22 @@ ul.check input {{ margin-top:3px; accent-color:var(--done); }}
 {focus_html}
 <div class="slot" style="margin-bottom:14px">{bar(day_done, day_total)}</div>
 <div class="grid">{"".join(slot_html)}</div>
+<p class="hint" id="hint"></p>
+<script>
+var served = location.protocol === 'http:' || location.protocol === 'https:';
+if (!served) {{
+  document.querySelectorAll('ul.check input').forEach(function(c){{ c.disabled = true; }});
+  document.getElementById('hint').textContent = '읽기 전용 · 체크해서 저장하려면 연구일지봇 메뉴 [6]으로 여세요';
+}} else {{
+  document.getElementById('hint').textContent = '체크박스를 클릭하면 바로 저장됩니다';
+}}
+function toggle(el) {{
+  fetch('/toggle', {{method:'POST', headers:{{'Content-Type':'application/json'}},
+    body: JSON.stringify({{file: el.dataset.file, line: parseInt(el.dataset.line)}})}})
+   .then(function(r){{ if(!r.ok) throw 0; location.reload(); }})
+   .catch(function(){{ el.checked = !el.checked; alert('저장 실패 — 서버로 열어야 합니다.'); }});
+}}
+</script>
 </body></html>"""
 
 with open(os.path.join(root, "dashboard.html"), "w", encoding="utf-8") as f:
