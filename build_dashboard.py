@@ -150,7 +150,7 @@ for slot in ["오전", "오후", "밤"]:
 page = f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>연구 동료 대시보드</title>
+<title>연구 일지 봇 대시보드</title>
 <style>
 :root {{
   --bg:#f6f7f9; --card:#fff; --fg:#1c2430; --muted:#7a8699;
@@ -189,7 +189,7 @@ ul.check input {{ margin-top:3px; accent-color:var(--done); }}
 .empty {{ color:var(--muted); font-size:13px; font-style:italic; }}
 .top {{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }}
 </style></head><body>
-<div class="top"><h1>🔬 연구 동료 대시보드</h1><span class="stamp">갱신 {stamp}</span></div>
+<div class="top"><h1>📓 연구 일지 봇 대시보드</h1><span class="stamp">갱신 {stamp}</span></div>
 {night_html}
 <h2>진행 프로젝트</h2>
 <div class="grid">{project_html}</div>

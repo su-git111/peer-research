@@ -293,8 +293,73 @@ def cmd_close():
     build_dashboard()
 
 
+def open_path(rel):
+    p = os.path.join(root, rel)
+    try:
+        os.startfile(p)
+    except AttributeError:
+        subprocess.run(["xdg-open", p])
+
+
+def cmd_open():
+    today = date.today()
+    path = os.path.join(root, "daily", f"{today}.md")
+    if not os.path.exists(path):
+        cmd_daily()
+    open_path(f"daily/{today}.md")
+    print("열기:", os.path.relpath(path, root), "— 끝낸 일을 [ ] 에서 [x] 로 바꾸면 됩니다.")
+
+
+def cmd_weekopen():
+    wk = iso_week(monday_of(date.today()))
+    path = os.path.join(root, "weekly", f"{wk}.md")
+    if not os.path.exists(path):
+        cmd_weekly()
+    open_path(f"weekly/{wk}.md")
+    print("열기:", os.path.relpath(path, root), "— Top 3 목표·프로젝트 할 일을 수정하고 저장하세요.")
+
+
+def cmd_menu():
+    items = [("1", "오늘 할 일 열기 / 체크하기   (아침~낮)"),
+             ("2", "오늘 일지 쓰기               (저녁)"),
+             ("3", "이번 주 계획 열기 / 수정     (월요일)"),
+             ("4", "밤 근무 지금 돌리기          (계산 + 논문)"),
+             ("5", "대시보드 열기"),
+             ("0", "종료")]
+    while True:
+        print("\n" + "=" * 46)
+        print("               연구 일지 봇")
+        print("=" * 46 + "\n")
+        for k, label in items:
+            print(f"    [{k}]  {label}")
+        try:
+            c = input("\n    번호를 누르고 Enter: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            return
+        if c == "0":
+            return
+        elif c == "1":
+            cmd_open()
+        elif c == "2":
+            cmd_close()
+            open_path("portfolio")
+        elif c == "3":
+            cmd_weekopen()
+        elif c == "4":
+            print("    잠시만요 — 계산과 논문 조회를 진행합니다...")
+            cmd_night()
+            open_path("dashboard.html")
+        elif c == "5":
+            open_path("dashboard.html")
+        else:
+            print("    1~5 또는 0을 입력하세요.")
+            continue
+        input("\n    계속하려면 Enter를 누르세요...")
+
+
 cmds = {"daily": cmd_daily, "weekly": cmd_weekly, "night": cmd_night,
-        "close": cmd_close, "dashboard": build_dashboard}
+        "close": cmd_close, "dashboard": build_dashboard, "open": cmd_open,
+        "weekopen": cmd_weekopen, "menu": cmd_menu}
 
 if __name__ == "__main__":
     key = sys.argv[1] if len(sys.argv) > 1 else ""
