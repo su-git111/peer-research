@@ -147,6 +147,39 @@ for slot in ["오전", "오후", "밤"]:
         f'<small>{d}/{len(items)}</small></h4>{checklist(items)}</div>'
     )
 
+week_phases = {"주초": [], "주중": [], "주말": []}
+week_other = []
+for checked, text in week["top"]:
+    ph = next((k for k in week_phases if text.startswith(k)), None)
+    if ph:
+        week_phases[ph].append((checked, text[len(ph):].lstrip(" ·—-").strip()))
+    else:
+        week_other.append((checked, text))
+
+phase_meta = [("주초", "🟦", "#3b6ef5", 2), ("주중", "🟨", "#f5a623", 3), ("주말", "🟩", "#2fb37a", 2)]
+if any(week_phases.values()):
+    segs, cols = [], []
+    for name, icon, color, days in phase_meta:
+        items = week_phases[name]
+        d = sum(1 for c, _ in items if c)
+        pct = round(100 * d / len(items)) if items else 0
+        segs.append(
+            f'<div class="wseg" style="flex:{days}">'
+            f'<div class="wfill" style="width:{pct}%;background:{color}33"></div>'
+            f'<div class="wtxt">{icon} {name} <b>{d}/{len(items)}</b></div></div>'
+        )
+        cols.append(
+            f'<div class="slot" style="border-top:3px solid {color}">'
+            f'<h4>{icon} {name} <small>{d}/{len(items)}</small></h4>{checklist(items)}</div>'
+        )
+    if week_other:
+        od = sum(1 for c, _ in week_other if c)
+        cols.append(f'<div class="slot"><h4>🔹 기타 <small>{od}/{len(week_other)}</small></h4>{checklist(week_other)}</div>')
+    week_html = f'<div class="wtl">{"".join(segs)}</div><div class="grid">{"".join(cols)}</div>'
+else:
+    wd = sum(1 for c, _ in week["top"] if c)
+    week_html = f'<div class="slot">{bar(wd, len(week["top"]))}{checklist(week["top"])}</div>'
+
 page = f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -188,6 +221,13 @@ ul.check li.done span {{ color:var(--muted); text-decoration:line-through; }}
 ul.check input {{ margin-top:3px; accent-color:var(--done); }}
 .empty {{ color:var(--muted); font-size:13px; font-style:italic; }}
 .top {{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }}
+.wtl {{ display:flex; gap:8px; margin:6px 0 14px; }}
+.wseg {{ position:relative; height:44px; border-radius:10px; overflow:hidden;
+  background:var(--barbg); border:1px solid var(--line); min-width:76px; }}
+.wfill {{ position:absolute; left:0; top:0; bottom:0; }}
+.wtxt {{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  gap:5px; font-size:13px; font-weight:600; z-index:1; white-space:nowrap; }}
+.wtxt b {{ color:var(--muted); font-weight:600; }}
 </style></head><body>
 <div class="top"><h1>📓 연구 일지 봇 대시보드</h1><span class="stamp">갱신 {stamp}</span></div>
 {night_html}
@@ -195,7 +235,7 @@ ul.check input {{ margin-top:3px; accent-color:var(--done); }}
 <div class="grid">{project_html}</div>
 
 <h2>이번 주 · {html.escape(week["title"])}</h2>
-<div class="slot">{bar(sum(1 for c,_ in week["top"] if c), len(week["top"]))}{checklist(week["top"])}</div>
+{week_html}
 
 <h2>오늘 · {html.escape(day["title"])}</h2>
 {focus_html}
