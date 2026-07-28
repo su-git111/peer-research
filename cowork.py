@@ -316,15 +316,22 @@ def cmd_weekopen():
     if not os.path.exists(path):
         cmd_weekly()
     open_path(f"weekly/{wk}.md")
-    print("열기:", os.path.relpath(path, root), "— Top 3 목표·프로젝트 할 일을 수정하고 저장하세요.")
+    print("열기:", os.path.relpath(path, root), "— 이번 주 목표·프로젝트 할 일을 수정하고 저장하세요.")
+
+
+def cmd_projopen():
+    open_path("projects.md")
+    print("열기: projects.md — 프로젝트 이름·큰 목표·작은 목표를 수정하고 저장하세요.")
+    print("      (## P1. 이름 / - 큰 목표: ... / 작은 목표 체크박스가 진행률 막대가 됩니다)")
 
 
 def cmd_menu():
     items = [("1", "오늘 할 일 열기 / 체크하기   (아침~낮)"),
              ("2", "오늘 일지 쓰기               (저녁)"),
              ("3", "이번 주 계획 열기 / 수정     (월요일)"),
-             ("4", "밤 근무 지금 돌리기          (계산 + 논문)"),
-             ("5", "대시보드 열기"),
+             ("4", "프로젝트 목록 열기 / 수정"),
+             ("5", "밤 근무 지금 돌리기          (계산 + 논문)"),
+             ("6", "대시보드 열기"),
              ("0", "종료")]
     while True:
         print("\n" + "=" * 46)
@@ -346,10 +353,13 @@ def cmd_menu():
         elif c == "3":
             cmd_weekopen()
         elif c == "4":
+            cmd_projopen()
+        elif c == "5":
             print("    잠시만요 — 계산과 논문 조회를 진행합니다...")
             cmd_night()
             open_path("dashboard.html")
-        elif c == "5":
+        elif c == "6":
+            build_dashboard()
             open_path("dashboard.html")
         else:
             print("    1~5 또는 0을 입력하세요.")
@@ -359,7 +369,7 @@ def cmd_menu():
 
 cmds = {"daily": cmd_daily, "weekly": cmd_weekly, "night": cmd_night,
         "close": cmd_close, "dashboard": build_dashboard, "open": cmd_open,
-        "weekopen": cmd_weekopen, "menu": cmd_menu}
+        "weekopen": cmd_weekopen, "projects": cmd_projopen, "menu": cmd_menu}
 
 if __name__ == "__main__":
     key = sys.argv[1] if len(sys.argv) > 1 else ""

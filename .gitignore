@@ -1,6 +1,14 @@
 # 야간 작업 원본 로그 (리포트로 요약되므로 제외)
 night/logs/*.log
 
+# 개인 데이터 — 공개 레포에 올리지 않고 로컬에만 저장
+projects.md
+dashboard.html
+daily/20*.md
+weekly/20*.md
+portfolio/20*.md
+night/reports/20*.md
+
 # Python
 __pycache__/
 *.pyc
